@@ -68,7 +68,7 @@
 {#if menuOpen && links.length > 0}
   <div class="mobile-menu">
     {#each links as link}
-      
+      <a
         href={link.href}
         class="mobile-link"
         target={link.external ? '_blank' : undefined}
