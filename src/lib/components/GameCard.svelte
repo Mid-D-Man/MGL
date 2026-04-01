@@ -1,28 +1,25 @@
 <!--
   GameCard.svelte
-  
   Props:
-    href        – link destination (if omitted, card is "coming soon" non-interactive)
+    href        – link destination (omit for "coming soon")
     title       – game title
     genre       – genre string
     desc        – description
     platforms   – array of platform strings
     tag         – badge label (e.g. "LIVE")
-    gif         – optional gif URL; if provided, replaces the animated SVG preview
-    gifAlt      – alt text for the gif image
-  
-  Slot "visual" – if provided and no gif, renders custom animated SVG content.
-                  Falls back to default locked / placeholder visual.
+    gif         – optional gif URL
+    gifAlt      – alt text for gif
+  Slot "visual" – animated SVG content when no gif
 -->
 <script lang="ts">
-  export let href: string | null = null;
-  export let title: string       = 'Unknown Title';
-  export let genre: string       = '';
-  export let desc: string        = '';
-  export let platforms: string[] = [];
-  export let tag: string | null  = null;
-  export let gif: string | null  = null;
-  export let gifAlt: string      = 'Game preview';
+  export let href: string | null  = null;
+  export let title: string        = 'Unknown Title';
+  export let genre: string        = '';
+  export let desc: string         = '';
+  export let platforms: string[]  = [];
+  export let tag: string | null   = null;
+  export let gif: string | null   = null;
+  export let gifAlt: string       = 'Game preview';
 
   $: isComingSoon = !href;
 </script>
@@ -32,7 +29,8 @@
     <div class="card-visual">
       <div class="card-soon-inner">
         <div class="lock-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="11" width="18" height="11" rx="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
@@ -60,12 +58,9 @@
   <a {href} class="game-card">
     <div class="card-visual">
       {#if gif}
-        <!-- GIF preview mode -->
         <img src={gif} alt={gifAlt} class="card-gif" />
       {:else}
-        <!-- Animated SVG preview via slot -->
         <slot name="visual">
-          <!-- Default fallback starfield -->
           <div class="card-stars"></div>
           <div class="card-planet"></div>
         </slot>
@@ -89,7 +84,8 @@
       </div>
       <div class="card-action">
         View &amp; Download
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="5" y1="12" x2="19" y2="12"/>
           <polyline points="12 5 19 12 12 19"/>
         </svg>
@@ -107,7 +103,6 @@
     transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
     position: relative;
     overflow: hidden;
-    cursor: pointer;
   }
 
   .game-card:not(.card-soon)::before {
@@ -128,7 +123,6 @@
 
   .card-soon { cursor: default; }
 
-  /* Visual area */
   .card-visual {
     height: 200px;
     background: linear-gradient(160deg, #050c1a 0%, #0a1528 50%, #050c1a 100%);
@@ -144,7 +138,6 @@
     background: linear-gradient(160deg, #060606, #0e0e0e);
   }
 
-  /* GIF fills the entire visual area */
   .card-gif {
     position: absolute;
     inset: 0;
@@ -154,7 +147,6 @@
     object-position: center;
   }
 
-  /* Default starfield (used when no visual slot + no gif) */
   .card-stars {
     position: absolute;
     inset: 0;
@@ -164,9 +156,7 @@
       radial-gradient(1px 1px at 48% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
       radial-gradient(1px 1px at 65% 75%, rgba(180,200,255,0.4) 0%, transparent 100%),
       radial-gradient(1px 1px at 78% 30%, rgba(255,255,255,0.7) 0%, transparent 100%),
-      radial-gradient(1px 1px at 88% 55%, rgba(180,200,255,0.5) 0%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 20% 85%, rgba(65,105,225,0.5) 0%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 55% 45%, rgba(65,105,225,0.35) 0%, transparent 100%);
+      radial-gradient(1.5px 1.5px at 20% 85%, rgba(65,105,225,0.5) 0%, transparent 100%);
   }
 
   .card-planet {
@@ -179,7 +169,6 @@
     opacity: 0.5;
   }
 
-  /* LIVE tag badge */
   .card-tag {
     position: absolute;
     top: 12px; left: 12px;
@@ -195,7 +184,6 @@
     z-index: 2;
   }
 
-  /* Coming soon center content */
   .card-soon-inner {
     display: flex;
     flex-direction: column;
@@ -224,7 +212,6 @@
     opacity: 0.4;
   }
 
-  /* Card body */
   .card-body { padding: 24px; }
 
   .card-genre {
@@ -288,6 +275,10 @@
 
   .game-card:hover .card-action { gap: 12px; }
 
-  /* Dim helpers for coming-soon */
   .dim { color: var(--dim); opacity: 0.4; }
+
+  @media (max-width: 480px) {
+    .card-body { padding: 20px 16px; }
+    .card-title { font-size: 15px; }
+  }
 </style>
