@@ -1,0 +1,89 @@
+name: Deploy MGL to GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+
+  # ── 1. Check commit message for --publish ─────────────────────────────────
+  parse-trigger:
+    runs-on: ubuntu-latest
+    outputs:
+      run_deploy: ${{ steps.decide.outputs.run_deploy }}
+    steps:
+      - name: Decide whether to deploy
+        id: decide
+        run: |
+          RUN=false
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RUN=true
+          else
+            MSG="${{ github.event.head_commit.message }}"
+            echo "Commit message: $MSG"
+            echo "$MSG" | grep -qiE '\-\-publish\b' && RUN=true || true
+          fi
+
+          echo "run_deploy=$RUN" >> $GITHUB_OUTPUT
+          echo "Run deploy: $RUN"
+
+  # ── 2. Deploy to GitHub Pages ─────────────────────────────────────────────
+  deploy:
+    runs-on: ubuntu-latest
+    needs: parse-trigger
+    if: needs.parse-trigger.outputs.run_deploy == 'true'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repo root — all HTML/assets will be served
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ── 3. Summary ────────────────────────────────────────────────────────────
+  summary:
+    runs-on: ubuntu-latest
+    needs: [parse-trigger, deploy]
+    if: always()
+    steps:
+      - name: Print summary
+        run: |
+          echo "================================================="
+          echo "  MGL — MidMan Game Library Deploy Summary"
+          echo "================================================="
+          echo "Build:   #${{ github.run_number }}"
+          echo "Branch:  ${{ github.ref_name }}"
+          echo "Trigger: ${{ github.event_name }}"
+          echo "Deploy:  ${{ needs.deploy.result || 'skipped' }}"
+          echo ""
+          if [ "${{ needs.parse-trigger.outputs.run_deploy }}" != "true" ]; then
+            echo "Skipped — add --publish to your commit message to trigger a deploy."
+            echo "Example: git commit -m 'Update Foreign Protocol page --publish'"
+          else
+            echo "Live at: https://<your-username>.github.io/<your-repo-name>/"
+          fi
