@@ -42,7 +42,7 @@
     {:else if links.length > 0}
       <div class="nav-links">
         {#each links as link}
-          
+          <a
             href={link.href}
             class="nav-link"
             target={link.external ? '_blank' : undefined}
